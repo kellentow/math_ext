@@ -2,76 +2,37 @@ from dataclasses import dataclass
 import math
 from typing import Union
 
-@dataclass
-class Vector2:
-    def __init__(self, x: Union[float|int], y: Union[float|int]):
-        self.x: Union[float|int] = x
-        self.y: Union[float|int] = y
-    
-    def __add__(self, other: 'Vector2') -> 'Vector2':
-        return Vector2(self.x + other.x, self.y + other.y)
-    
-    def __sub__(self, other: 'Vector2') -> 'Vector2':
-        return Vector2(self.x - other.x, self.y - other.y)
-    
-    def __mul__(self, scalar: float) -> 'Vector2':
-        return Vector2(self.x * scalar, self.y * scalar)
-    
-    def length(self) -> float:
-        return math.sqrt(self.x * self.x + self.y * self.y)
-    
-    def normalize(self) -> 'Vector2':
-        length = self.length()
-        if length > 0:
-            return self * (1.0 / length)
-        return Vector2(0, 0)
-    
-    def __str__(self) -> str:
-        return f"Vector2({self.x}, {self.y})"
-    
-    def __dot__(self, other) -> float:
-        if isinstance(other, Vector2):
-            return self.x * other.x + self.y * other.y
-        elif isinstance(other, Vector3):
-            return self.x * other.x + self.y * other.y + other.z
-        else:
-            raise TypeError("Unsupported operand type for __dot__")
     
 @dataclass
-class Vector3:
-    def __init__(self, x: Union[float|int], y: Union[float|int], z: Union[float|int]):
-        self.x: Union[float|int] = x
-        self.y: Union[float|int] = y
-        self.z: Union[float|int] = z
-
-    def __add__(self, other: 'Vector3') -> 'Vector3':
-        return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
-    def __sub__(self, other: 'Vector3') -> 'Vector3':
-        return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
-
-    def __mul__(self, scalar: float) -> 'Vector3':
-        return Vector3(self.x * scalar, self.y * scalar, self.z * scalar)
-
-    def length(self) -> float:
-        return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
-
-    def normalize(self) -> 'Vector3':
-        length = self.length()
-        if length > 0:
-            return self * (1.0 / length)
-        return Vector3(0, 0, 0)
-
+class Matrix2x2:
+    def __init__(self, r1:list[float|int], r2:list[float|int]):
+        self.a11, self.a12 = r1
+        self.a21, self.a22 = r2
+        self.determinant = self.determinant()
+        self.inverse = self.inverse()
+        self.transpose = self.transpose()
+    def __add__(self, other: 'Matrix2x2') -> 'Matrix2x2':
+        return Matrix2x2([self.a11 + other.a11, self.a12 + other.a12],
+                         [self.a21 + other.a21, self.a22 + other.a22])
+    def __sub__(self, other: 'Matrix2x2') -> 'Matrix2x2':
+        return Matrix2x2([self.a11 - other.a11, self.a12 - other.a12],
+                         [self.a21 - other.a21, self.a22 - other.a22])
+    def __mul__(self, scalar: float) -> 'Matrix2x2':
+        return Matrix2x2([self.a11 * scalar, self.a12 * scalar],
+                         [self.a21 * scalar, self.a22 * scalar])
     def __str__(self) -> str:
-        return f"Vector3({self.x}, {self.y}, {self.z})"
-    
-    def __dot__(self, other) -> float:
-        if isinstance(other, Vector2):
-            return self.x * other.x + self.y * other.y + self.z
-        elif isinstance(other, Vector3):
-            return self.x * other.x + self.y * other.y + self.z * other.z
-        else:
-            raise TypeError("Unsupported operand type for __dot__")
-    
+        return f"Matrix2x2([{self.a11}, {self.a12}], [{self.a21}, {self.a22}])"
+    def determinant(self) -> float:
+        return self.a11 * self.a22 - self.a12 * self.a21
+    def inverse(self) -> 'Matrix2x2':
+        determinant = self.determinant
+        if determinant == 0:
+            raise ValueError("Matrix is not invertible")
+        return Matrix2x2([self.a22 / determinant, -self.a12 / determinant],
+                         [-self.a21 / determinant, self.a11 / determinant])
+    def transpose(self) -> 'Matrix2x2':
+        return Matrix2x2([self.a11, self.a21], [self.a12, self.a22])
+
 @dataclass
 class Matrix3x3:
     def __init__(self, r1:list[float|int], r2:list[float|int], r3:list[float|int]):
@@ -145,7 +106,6 @@ class Matrix3x3:
             [self.a12, self.a22, self.a32],
             [self.a13, self.a23, self.a33]
         )
-    
 
 class Matrix4x4:
     def __init__(self, r1:list[float|int], r2:list[float|int], r3:list[float|int], r4:list[float|int]):
@@ -228,5 +188,135 @@ class Matrix4x4:
             [self.a14, self.a24, self.a34, self.a44]
         )
 
-def dot(v1: Vector2 | Vector3, v2: Vector2 | Vector3) -> float:
+@dataclass
+class Vector2:
+    def __init__(self, x: Union[float|int], y: Union[float|int]):
+        self.x: Union[float|int] = x
+        self.y: Union[float|int] = y
+    
+    def __add__(self, other: 'Vector2') -> 'Vector2':
+        return Vector2(self.x + other.x, self.y + other.y)
+    
+    def __sub__(self, other: 'Vector2') -> 'Vector2':
+        return Vector2(self.x - other.x, self.y - other.y)
+    
+    def __mul__(self, scalar: float) -> 'Vector2':
+        return Vector2(self.x * scalar, self.y * scalar)
+    
+    def length(self) -> float:
+        return math.sqrt(self.x * self.x + self.y * self.y)
+    
+    def normalize(self) -> 'Vector2':
+        length = self.length()
+        if length > 0:
+            return self * (1.0 / length)
+        return Vector2(0, 0)
+    
+    def __str__(self) -> str:
+        return f"Vector2({self.x}, {self.y})"
+    
+    def __dot__(self, other) -> float:
+        if isinstance(other, Vector2):
+            return self.x * other.x + self.y * other.y
+        elif isinstance(other, Vector3):
+            return self.x * other.x + self.y * other.y + other.z
+        else:
+            raise TypeError("Unsupported operand type for __dot__")
+        
+    def cross(self, other) -> float:
+        return self.x * other.y - self.y * other.x
+    def normalize(self) -> 'Vector2':
+        length = self.length()
+        if length > 0:
+            return self * (1.0 / length)
+        return Vector2(0, 0)
+    def transform(self, matrix: Matrix2x2) -> 'Vector2':
+        x = self.x * matrix.a11 + self.y * matrix.a21
+        y = self.x * matrix.a21 + self.y * matrix.a22
+        return Vector2(x, y)
+    def rotate(self, angle) -> 'Vector2':
+        matrix = Matrix2x2([math.cos(angle), -math.sin(angle)],
+            [math.sin(angle), math.cos(angle)]
+        )
+        return self.transform(matrix)
+    
+@dataclass
+class Vector3:
+    def __init__(self, x: Union[float|int], y: Union[float|int], z: Union[float|int]):
+        self.x: Union[float|int] = x
+        self.y: Union[float|int] = y
+        self.z: Union[float|int] = z
+
+    def __add__(self, other: 'Vector3') -> 'Vector3':
+        return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
+    def __sub__(self, other: 'Vector3') -> 'Vector3':
+        return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def __mul__(self, scalar: float) -> 'Vector3':
+        return Vector3(self.x * scalar, self.y * scalar, self.z * scalar)
+
+    def length(self) -> float:
+        return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+
+    def normalize(self) -> 'Vector3':
+        length = self.length()
+        if length > 0:
+            return self * (1.0 / length)
+        return Vector3(0, 0, 0)
+
+    def __str__(self) -> str:
+        return f"Vector3({self.x}, {self.y}, {self.z})"
+    
+    def __dot__(self, other) -> float:
+        if isinstance(other, Vector2):
+            return self.x * other.x + self.y * other.y + self.z
+        elif isinstance(other, Vector3):
+            return self.x * other.x + self.y * other.y + self.z * other.z
+        else:
+            raise TypeError("Unsupported operand type for __dot__")
+        
+    def cross(self, other):
+        return Vector3(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x
+        )
+    
+    def normalize(self):
+        length = math.sqrt(self.dot(self))
+        if length == 0:
+            return Vector3(0, 0, 0)
+        return Vector3(self.x / length, self.y / length, self.z / length)
+    
+    def transform(self, matrix: Matrix4x4) -> 'Vector3':
+        x = self.x * matrix.a11 + self.y * matrix.a21 + self.z * matrix.a31 + matrix.a41
+        y = self.x * matrix.a12 + self.y * matrix.a22 + self.z * matrix.a32 + matrix.a42
+        z = self.x * matrix.a13 + self.y * matrix.a23 + self.z * matrix.a33 + matrix.a43
+        w = self.x * matrix.a14 + self.y * matrix.a24 + self.z * matrix.a34 + matrix.a44
+        if w != 0:
+            return Vector3(x/w, y/w, z/w)
+        return Vector3(x, y, z)
+    
+    def rotate(self, angle):
+        z_matrix = Matrix4x4(
+            [math.cos(angle.z), -math.sin(angle.z), 0, 0],
+            [math.sin(angle.z), math.cos(angle.z), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        )
+        y_matrix = Matrix4x4(
+            [math.cos(angle.y), 0, math.sin(angle.y), 0],
+            [0, 1, 0, 0],
+            [-math.sin(angle.y), 0, math.cos(angle.y), 0],
+            [0, 0, 0, 1]
+        )
+        x_matrix = Matrix4x4(
+            [1, 0, 0, 0],
+            [0, math.cos(angle.x), -math.sin(angle.x), 0],
+            [0, math.sin(angle.x), math.cos(angle.x), 0],
+            [0, 0, 0, 1]
+        )
+        return self.transform(z_matrix).transform(y_matrix).transform(x_matrix)
+    
+def dot(v1: Union[Vector2 | Vector3], v2: Union[Vector2 | Vector3]) -> float:
     return v1.__dot__(v2) 
